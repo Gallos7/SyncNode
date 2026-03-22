@@ -8,7 +8,7 @@
 
 ## 🎬 Demo Preview
 
-<video controls src="SyncNode-LinkedIn.mp4" title="Title"></video>
+*(Drag and drop your video file here)*
 
 ---
 
