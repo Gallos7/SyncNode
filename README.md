@@ -6,6 +6,12 @@
 
 ---
 
+## 🎬 Demo Preview
+
+<video controls src="SyncNode-LinkedIn.mp4" title="Title"></video>
+
+---
+
 ## ✨ Key Features
 
 - **🏢 Multi-Tenant Architecture**  
@@ -136,18 +142,19 @@ Make sure your virtual environment is active before running these.
 
 ### 🌱 Seed the Database
 
-Populates the database with sample data:
-- 4 companies *(SyncNode System, TechFlow Inc, SoftSolutions, Innovate Ltd)*
-- 5 users (Including a global Superadmin)
-- Sample issues
+Automatically populates the database with realistic sample data to facilitate local testing:
+- **4 Isolated Companies** *(SyncNode System, TechFlow Inc, SoftSolutions, Innovate Ltd)*
+- **7 Users** spanning the full RBAC hierarchy (Superadmin, Owner, Admin, IT, Developer)
+- **3 Dummy Issues** and historical Activity Feed logs
 
 ```bash
 python seed.py
 ```
 
 **Test credentials (Password is `password123` for all):**
-- **Superadmin:** `superadmin@syncnode.com` (Has global IT access)
-- **Standard Admin:** `alex@techflow.com`
+- **System Superadmin:** `superadmin@syncnode.com` (Global access)
+- **Standard Admin:** `alex@techflow.com` (TechFlow workspace)
+- **IT Administrator:** `david@techflow.com` (TechFlow IT roles & permissions)
 
 ---
 
