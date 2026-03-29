@@ -1,32 +1,47 @@
-# 1. Base Image: Use the official lightweight Python 3.11 image.
-# The 'slim' tag strips out unnecessary OS packages to keep the final file size tiny.
+# -----------------------------------------------------------------------------
+# STAGE: Base Image Configuration
+# Using the official Python 3.11 image. The 'slim' variant strips out unnecessary 
+# OS packages (like compilers) to keep the final image size minimal and secure.
+# -----------------------------------------------------------------------------
 FROM python:3.11-slim
 
-# 2. Environment Variables: Standard Python Docker configurations.
-# Prevents Python from writing useless .pyc files to disk.
+# -----------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES
+# PYTHONDONTWRITEBYTECODE: Prevents Python from writing .pyc files to disk.
+# PYTHONUNBUFFERED: Ensures console output is piped directly to the terminal 
+# without being buffered, allowing for real-time log monitoring.
+# -----------------------------------------------------------------------------
 ENV PYTHONDONTWRITEBYTECODE=1
-# Ensures console output is not buffered by Docker (makes terminal logs appear instantly).
 ENV PYTHONUNBUFFERED=1
 
-# 3. Work Directory: Set the default folder inside the container.
-# All subsequent commands (COPY, RUN, CMD) will execute inside this folder.
+# Set the working directory within the container's filesystem.
 WORKDIR /app
 
-# 4. Dependency Caching: Copy ONLY the requirements file first.
-# Docker builds in "layers". By doing this first, Docker memorizes your installed packages.
-# If you only change your Python code later, Docker skips the 60-second pip install step and rebuilds instantly!
+# -----------------------------------------------------------------------------
+# LAYER OPTIMIZATION: Dependency Installation
+# Docker caches layers to speed up builds. By copying ONLY the requirements file 
+# first, Docker memorizes the installed packages. If source code changes later, 
+# Docker skips the 'pip install' step and rebuilds almost instantly.
+# -----------------------------------------------------------------------------
 COPY requirements.txt .
 
-# 5. Install Dependencies: Install the Python packages.
-# '--no-cache-dir' prevents pip from saving the downloaded installation zip files, keeping the image small.
+# Install dependencies. The '--no-cache-dir' flag prevents pip from caching 
+# the downloaded installation files (.whl), further reducing the final image size.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 6. Copy Source Code: Move the rest of your backend code into the container.
+# -----------------------------------------------------------------------------
+# APPLICATION SOURCE CODE COPY
+# Copy the entire backend source directory into the container.
+# -----------------------------------------------------------------------------
 COPY . .
 
-# 7. Expose Port: Tell Docker which port the application listens on.
-# (Note: This is just documentation for other developers; the 'docker run -p' command actually opens it).
+# Inform Docker that the container intends to listen on port 8000 at runtime.
+# Note: This is purely documentation. The actual port binding happens in docker-compose.
 EXPOSE 8000
 
-# 8. Start Command: The exact command to spin up the FastAPI ASGI server.
+# -----------------------------------------------------------------------------
+# CONTAINER EXECUTION COMMAND
+# The exact command to spin up the FastAPI ASGI server using Uvicorn.
+# Binding to 0.0.0.0 is required in Docker to allow external network access.
+# -----------------------------------------------------------------------------
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

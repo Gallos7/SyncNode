@@ -29,8 +29,8 @@
 - **🛠️ IT Administration Tools**  
   Built-in capabilities for password resets, account recovery, and user management.
 
-- **🎨 Modern UI/UX**  
-  Built with React 19 and Tailwind CSS v4, featuring dark mode and optimistic UI updates for a smooth experience.
+- **🐳 Fully Containerized**  
+  Orchestrated via Docker Compose for seamless, reproducible environments across all machines.
 
 ---
 
@@ -40,107 +40,107 @@
 - **Framework:** FastAPI (Python)  
 - **Database:** MySQL (SQLAlchemy ORM)  
 - **Migrations:** Alembic  
-- **Security:** Passlib (Bcrypt), Python-JOSE (JWT)  
+- **Security:** Raw Bcrypt, Python-JOSE (JWT)  
 - **Email Service:** Resend API  
 
 ### Frontend
 - **Framework:** React 19 + Vite  
 - **Styling:** Tailwind CSS v4  
 - **Routing:** React Router v7  
-- **HTTP Client:** Axios  
+- **HTTP Client:** Axios 
+
+### DevOps
+- **Containerization:** Docker & Docker Compose
 
 ---
 
 ## 📂 Project Structure
 
-This project follows a **monorepo architecture**, containing both backend and frontend:
+This project follows a **monorepo architecture**, fully orchestrated by Docker:
 
 ```text
-syncnode/
-├── app/                  # FastAPI backend
-│   ├── core/             # Configuration & settings
-│   ├── db/               # Database engine & session handling
-│   ├── models/           # SQLAlchemy models
-│   ├── routers/          # API routes (endpoints)
-│   ├── schemas/          # Pydantic schemas
-│   └── services/         # Business logic layer
+SyncNode/
+|
+├── docker-compose.yml    # Master orchestration file
+├── backend/              # FastAPI backend
+│   ├── Dockerfile        # Backend container blueprint
+│   ├── requirements.txt  # Python dependencies
+|   ├── .env.example      # Environment variables template
+│   ├── seed.py           # Database seeder script
+|   ├── nuke.py           # Database reset utility
+│   ├── alembic/          # Database migrations
+│   └── app/              # Core API logic
+│       ├── core/             # Configuration & settings
+│       ├── db/               # Database engine & session handling
+│       ├── models/           # SQLAlchemy models
+│       ├── routers/          # API routes (endpoints)
+│       ├── schemas/          # Pydantic schemas
+│       └── services/         # Business logic layer
+|
 ├── frontend/             # React (Vite) frontend
-│   ├── src/
+|   ├── Dockerfile        # Frontend container blueprint
+|   ├── package.json      # Node dependencies
+│   ├── src/              # React components and views
 │   │   ├── components/   # Reusable UI components
 │   │   ├── context/      # Global state (AuthContext)
 │   │   ├── hooks/        # Custom hooks
 │   │   ├── layouts/      # Layout components
 │   │   ├── pages/        # Route-level pages
 │   │   └── services/     # API communication (Axios)
-├── alembic/              # Migration versions
-├── .env.example          # Environment variables template
-├── requirements.txt      # Python dependencies
-├── seed.py               # Development data seeder
-└── nuke.py               # Database reset utility
 ```
 
 ---
 
 ## 🚀 Getting Started
 
+SyncNode is fully containerized. You do not need to install Python, Node.js, or MySQL on your local machine to run this application.
+
+---
+
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 20+
-- MySQL Server (local or cloud)
+- [Docker Desktop]`(https://www.docker.com/products/docker-desktop/)` installed and running.
 
 ---
 
-### 1️⃣ Backend Setup
+### 1️⃣ Environment Setup
 
-> Copy `.env.example` to `.env` and configure your database and API keys before starting.
+Clone the repository and set up your backend environment variables:
 
 ```bash
-# Clone the repository
-git clone https://github.com/Gallos7/SyncNode.git
-cd syncnode
-
-# Create & activate virtual environment
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Apply migrations
-alembic upgrade head
-
-# Start the backend
-uvicorn app.main:app --reload
+git clone "https://github.com/Gallos7/SyncNode.git"
+cd SyncNode/backend
+cp .env.example .env
 ```
 
-Backend runs at: **http://localhost:8000**
+
+*Note: Ensure you add your `RESEND_API_KEY` and update the `DATABASE_URL` in the `.env` file to point to the Docker database service (e.g., `mysql+pymysql://root:"Your_Password"@db:3306/syncnode`)*
+
 
 ---
 
-### 2️⃣ Frontend Setup
+### 2️⃣ Launch the Fleet
 
-Open a new terminal:
+Return to the root project folder and start the entire stack:
 
 ```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
+cd ..
+docker compose up --build
 ```
 
-Frontend runs at: **http://localhost:5173**
+*Note: This single command will spin up the MySQL Database, the FastAPI Backend, and the React Frontend on an isolated network.*
+
+- **Frontend UI**: `http://localhost:5173`
+- **Backend Swagger API**: `http://localhost:8000/docs`
+- **Database Port *(For DB Viewers)***: `localhost:3307`
 
 ---
 
 ## 🛠️ Developer Tools
 
-Make sure your virtual environment is active before running these.
+To interact with the database inside the Docker container, open a new terminal in the root directory while the containers are running.
 
-### 🌱 Seed the Database
+### 🌱 Apply Migrations & Seed the Database
 
 Automatically populates the database with realistic sample data to facilitate local testing:
 - **4 Isolated Companies** *(SyncNode System, TechFlow Inc, SoftSolutions, Innovate Ltd)*
@@ -148,7 +148,11 @@ Automatically populates the database with realistic sample data to facilitate lo
 - **3 Dummy Issues** and historical Activity Feed logs
 
 ```bash
-python seed.py
+# 1. Build the database tables
+docker compose exec api alembic upgrade head
+
+# 2. Seed the data
+docker compose exec api python seed.py
 ```
 
 **Test credentials (Password is `password123` for all):**
@@ -163,9 +167,10 @@ python seed.py
 ⚠️ **Danger zone** — completely resets the database.
 
 ```bash
-python nuke.py
+docker compose exec api python nuke.py
 ```
 
+---
 ---
 
 <div align="center">

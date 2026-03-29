@@ -1,37 +1,70 @@
+# Version is often omitted in modern Compose specifications but refers to standard compatibility.
+# For local development of a 3-tier architecture (Database, Backend, Frontend).
 services:
+  # --- Service 1: The Relational Database (MySQL) ---
   db:
+    # Industry Practice: Use a specific minor version tag (e.g., mysql:8.0.36)
+    # rather than mysql:latest, to ensure environment reproducibility.
     image: mysql:8.0
     restart: always
     environment:
-      # Auto-provisions the initial database schema and root credentials
-      MYSQL_ROOT_PASSWORD: ena123456789
+      # These variables auto-provision the initial database schema and root credentials
+      # *DO NOT* commit production passwords here. Use .env files for production.
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: syncnode
     ports:
-      # Maps container port 3306 to host port 3307 to prevent conflicts with local Windows MySQL
+      # Host:Container port mapping. Map host port 3307 -> container port 3306.
+      # This prevents conflicts if the developer already has a local MySQL installation on port 3306.
       - "3307:3306"
     volumes:
-      # Mounts a named volume to persist database state across container restarts
+      # PERISTENCE MECHANISM: A named Docker volume is used to store database data (/var/lib/mysql).
+      # If this container is destroyed and rebuilt, the data will persist within this volume.
       - db_data:/var/lib/mysql
 
+  # --- Service 2: The Backend API (FastAPI) ---
   api:
+    # Instructs Compose to build the image locally using the Dockerfile located in the ./backend directory.
     build: ./backend
     restart: always
     ports:
-      # Exposes the FastAPI ASGI server to the host machine
+      # Exposes the application to the host machine on port 8000.
       - "8000:8000"
     env_file:
-      # Injects environment variables from the local .env file
+      # SECURE PRACTICE: Inject environment variables (database credentials, API keys) from a local, untracked .env file.
       - ./backend/.env
     volumes:
-      # Mounts the local backend directory to the container's working directory for live hot-reloading
+      # DEVELOPER EXPERIENCE (Hot-Reloading): Bind mounts the local backend source code folder to the container's /app folder.
+      # Changes made in VS Code on the host machine are instantly reflected inside the container.
       - ./backend:/app
     command: 
-      # Overrides the Dockerfile CMD to enable Uvicorn's live-reload feature for local development
+      # ASGI SERVER OVERRIDE: For development, we explicitly run Uvicorn with the --reload flag.
+      # The --host 0.0.0.0 is crucial; it binds the ASGI server to all network interfaces within the container,
+      # allowing the host machine to access port 8000.
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
-      # Ensures the database container is initialized before the API container boots
+      # ORCHESTRATION ORDER: Ensures the MySQL database container is initialized and active before the API container attempts to boot.
       - db
 
+  # --- Service 3: The Frontend Web Application (React/Vite) ---
+  frontend:
+    # Builds the frontend image using the Dockerfile in the ./frontend directory.
+    build: ./frontend
+    restart: always
+    ports:
+      # Vite (and similar tools like Next.js) usually dev-host on port 5173 or 3000.
+      # We expose it on 5173 to the host Windows machine.
+      - "5173:5173"
+    volumes:
+      # DEVELOPER EXPERIENCE (Hot-Reloading): Standard bind mount for instant frontend code sync.
+      - ./frontend:/app
+      # NODE_MODULES PROTECTION: An anonymous volume prevents local development node_modules
+      # (often built for Windows) from overwriting the container's specialized Linux node_modules.
+      - /app/node_modules
+    depends_on:
+      # Ensure the API is healthy before booting the UI.
+      - api
+
+# Define the named volumes used by the services defined above.
 volumes:
-  # Declares the named volume for database data persistence
+  # The persistence volume for the MySQL database service.
   db_data:

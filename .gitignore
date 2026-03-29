@@ -1,15 +1,37 @@
-# Environments
+# =========================
+# SyncNode Master .gitignore
+# =========================
+
+# --- Security & Environments (CRITICAL) ---
 .env
+.env.*
+!.env.example
 venv/
 env/
 
-# Python
+# --- Python / Backend ---
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+alembic.ini.backup
 
-# Node
+# --- Node / Frontend ---
 node_modules/
 dist/
+dist-ssr/
+.pnp
+.pnp.js
 
-# OS
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+
+# --- OS & Editor ---
 .DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
