@@ -5,12 +5,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import auth, companies, issues, users
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 # Initialize the core FastAPI application instance
 app = FastAPI(
     title="SyncNode API",
     description="Enterprise-grade backend for modern issue tracking and team collaboration.",
     version="1.0.0"
 )
+
+# Expose the app to Prometheus to monitor the traffic
+Instrumentator().instrument(app).expose(app)
 
 # Configure dynamic CORS origins for safe deployment and local development
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")

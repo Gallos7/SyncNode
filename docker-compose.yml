@@ -20,6 +20,35 @@ services:
       # PERISTENCE MECHANISM: A named Docker volume is used to store database data (/var/lib/mysql).
       # If this container is destroyed and rebuilt, the data will persist within this volume.
       - db_data:/var/lib/mysql
+      
+  # --- Service 4: The Telemetry Database (Prometheus) ---
+  prometheus:
+    # Industry Practice: Prometheus acts as a time-series database that scrapes and stores metrics.
+    image: prom/prometheus:latest
+    volumes:
+      # CONFIGURATION MOUNT: Injects our local scraping rules into the container.
+      # If we change targets locally, we just restart the container to apply them.
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      # Exposes the raw Prometheus data interface to the host on port 9090.
+      # Useful for debugging raw queries before building Grafana dashboards.
+      - "9090:9090"
+
+  # --- Service 5: The Observability Dashboard (Grafana) ---
+  grafana:
+    # Industry Practice: Grafana acts as the visualization layer, reading data from Prometheus.
+    image: grafana/grafana:latest
+    ports:
+      # Exposes the Grafana Web UI to the host on port 3000.
+      - "3000:3000"
+    environment:
+      # SECURITY OVERRIDE: Sets a static admin password for local development.
+      # In production, this would be injected via secure secrets or OAuth.
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      # ORCHESTRATION ORDER: Ensures the metrics database (Prometheus) is running
+      # before the visualization tool (Grafana) attempts to connect to it.
+      - prometheus
 
   # --- Service 2: The Backend API (FastAPI) ---
   api:

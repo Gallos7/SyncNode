@@ -2,7 +2,7 @@
 
 > A modern, enterprise-grade issue tracking and team collaboration platform.
 
-**SyncNode** is a full-stack, multi-tenant issue tracking system built for performance, security, and scalability. It combines a robust **FastAPI (Python)** backend with a highly responsive **React + Tailwind** frontend, featuring advanced Role-Based Access Control (RBAC) and real-time audit logging.
+**SyncNode** is a full-stack, multi-tenant issue tracking system built for performance, security, and scalability. It combines a robust **FastAPI (Python)** backend with a highly responsive **React + Tailwind** frontend, featuring advanced Role-Based Access Control (RBAC) and real-time audit logging, and a complete system observability pipeline.
 
 ---
 
@@ -29,6 +29,12 @@
 - **🛠️ IT Administration Tools**  
   Built-in capabilities for password resets, account recovery, and user management.
 
+- **📊 Live Observability**
+ Integrated Prometheus and Grafana stack for real-time telemetry, API request monitoring, and database health metrics.
+
+- **🌱 Dynamic Data Generation**
+ Powered by Faker to instantly provision realistic, high-volume dummy companies, users, and tickets for testing.
+
 - **🐳 Fully Containerized**  
   Orchestrated via Docker Compose for seamless, reproducible environments across all machines.
 
@@ -41,6 +47,7 @@
 - **Database:** MySQL (SQLAlchemy ORM)  
 - **Migrations:** Alembic  
 - **Security:** Raw Bcrypt, Python-JOSE (JWT)  
+- **Data Generation:** Faker
 - **Email Service:** Resend API  
 
 ### Frontend
@@ -51,6 +58,8 @@
 
 ### DevOps
 - **Containerization:** Docker & Docker Compose
+- **Metrics Database:** Prometheus
+- **Visualization:** Grafana
 
 ---
 
@@ -61,12 +70,15 @@ This project follows a **monorepo architecture**, fully orchestrated by Docker:
 ```text
 SyncNode/
 |
-├── docker-compose.yml    # Master orchestration file
+├── docker-compose.yml    # Master orchestration file (API, DB, UI, Telemetry)
+├── prometheus.yml        # Prometheus metric scraping configuration
+|
 ├── backend/              # FastAPI backend
 │   ├── Dockerfile        # Backend container blueprint
 │   ├── requirements.txt  # Python dependencies
 |   ├── .env.example      # Environment variables template
 │   ├── seed.py           # Database seeder script
+│   ├── fake_seed.py      # Faker-powered dynamic database seeder
 |   ├── nuke.py           # Database reset utility
 │   ├── alembic/          # Database migrations
 │   └── app/              # Core API logic
@@ -87,6 +99,9 @@ SyncNode/
 │   │   ├── layouts/      # Layout components
 │   │   ├── pages/        # Route-level pages
 │   │   └── services/     # API communication (Axios)
+|
+└── data_pipeline/        # External clients and traffic simulation
+    └── office_bot.py     # Automated bot mimicking live user traffic
 ```
 
 ---
@@ -132,6 +147,8 @@ docker compose up --build
 
 - **Frontend UI**: `http://localhost:5173`
 - **Backend Swagger API**: `http://localhost:8000/docs`
+- **Grafana Dashboard:** `http://localhost:3000 (Login: admin / admin)`
+- **Prometheus Raw Metrics:** `http://localhost:9090`
 - **Database Port *(For DB Viewers)***: `localhost:3307`
 
 ---
@@ -142,7 +159,7 @@ To interact with the database inside the Docker container, open a new terminal i
 
 ### 🌱 Apply Migrations & Seed the Database
 
-Automatically populates the database with realistic sample data to facilitate local testing:
+Our updated seeding pipeline uses Faker to automatically populate the database with realistic, high-volume sample data across the entire RBAC hierarchy:
 - **4 Isolated Companies** *(SyncNode System, TechFlow Inc, SoftSolutions, Innovate Ltd)*
 - **7 Users** spanning the full RBAC hierarchy (Superadmin, Owner, Admin, IT, Developer)
 - **3 Dummy Issues** and historical Activity Feed logs

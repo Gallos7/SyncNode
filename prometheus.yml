@@ -1,0 +1,14 @@
+global:
+  # POLLING RATE: Defines how often Prometheus reaches out to the targets.
+  # 5 seconds provides high-resolution data for local load testing, 
+  # though 15s-30s is more common in production to save storage space.
+  scrape_interval: 5s 
+
+scrape_configs:
+  # JOB IDENTIFIER: A logical name for this specific data stream.
+  - job_name: 'syncnode-backend'
+    static_configs:
+      # TARGET DNS: The internal Docker network address. 
+      # Because the service is named "api" in docker-compose.yml, 
+      # Docker automatically routes "api:8000" to the correct container.
+      - targets: ['api:8000']
