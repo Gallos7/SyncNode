@@ -8,7 +8,7 @@
 
 ## 🎬 Demo Preview
 
-<video src="https://github.com/user-attachments/assets/5a648d90-3de6-4a0d-be01-125c24adf2f6" controls="controls" muted="muted" style="max-height: 600px; width: 100%; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></video>
+https://github.com/user-attachments/assets/dca5e88d-f1ac-45a1-89e3-23531b2c9bc8
 
 ---
 
